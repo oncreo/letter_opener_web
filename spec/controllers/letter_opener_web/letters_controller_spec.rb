@@ -134,6 +134,12 @@ RSpec.describe LetterOpenerWeb::LettersController, 'with delivered letters' do
       expect(response.body).not_to include('jquery')
     end
 
+    it 'shows the Rails environment' do
+      get :index
+
+      expect(response.body).to include(%(<span class="env env-test" title="Rails environment">test</span>))
+    end
+
     it 'shows the requested letter' do
       other = deliver_letter(location, subject: 'Another one')
       get :index, params: { letter: letter.id }

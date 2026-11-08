@@ -10,6 +10,7 @@
         <%= lo_icon(:inbox, size: 18) %>
         <h1>Letters</h1>
         <span class="count" data-count><%= @letters.size %></span>
+        <span class="env env-<%= Rails.env %>" title="Rails environment"><%= Rails.env %></span>
       </div>
       <div class="actions">
         <button type="button" class="icon-button" data-action="theme" title="Theme: system" aria-label="Change theme">
