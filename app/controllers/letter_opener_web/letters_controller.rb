@@ -1,9 +1,5 @@
 # frozen_string_literal: true
 
-unless Rails.respond_to?(:autoloaders) && Rails.autoloaders.zeitwerk_enabled?
-  require_dependency 'letter_opener_web/application_controller'
-end
-
 module LetterOpenerWeb
   class LettersController < ApplicationController
     helper LetterOpenerWeb::LettersHelper

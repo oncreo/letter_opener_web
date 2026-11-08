@@ -1,44 +1,48 @@
-# This workflow integrates Brakeman with GitHub's Code Scanning feature
-# Brakeman is a static analysis security vulnerability scanner for Ruby on Rails applications
-
+---
+# Scans the code with Brakeman and reports findings to GitHub code scanning.
 name: Brakeman Scan
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
-    # The branches below must be a subset of the branches above
-    branches: [ master ]
+    branches: [master]
   schedule:
-    - cron: '21 4 * * 4'
+    - cron: "21 4 * * 4"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   brakeman-scan:
     name: Brakeman Scan
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      security-events: write # upload the SARIF report
     steps:
-    # Checkout the repository to the GitHub Actions runner
-    - name: Checkout
-      uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
-    # Customize the ruby version depending on your needs
-    - name: Setup Ruby
-      uses: ruby/setup-ruby@v1
-      with:
-        ruby-version: ruby
+      - uses: ruby/setup-ruby@b3aaceaef7e0ee231b499e7b5f49c03fc1d32199 # v1.338.0
+        with:
+          ruby-version: "4.0"
 
-    - name: Setup Brakeman
-      run: |
-        gem install brakeman
+      - name: Install Brakeman
+        run: gem install brakeman --version 8.1.0 --no-document
 
-    # Execute Brakeman CLI and generate a SARIF output with the security issues identified during the analysis
-    - name: Scan
-      continue-on-error: true
-      run: |
-        brakeman -f sarif -o output.sarif.json .
+      # Findings are reported to code scanning rather than failing the job.
+      - name: Scan
+        continue-on-error: true
+        run: brakeman --format sarif --output output.sarif.json .
 
-    # Upload the SARIF file generated in the previous step
-    - name: Upload SARIF
-      uses: github/codeql-action/upload-sarif@v4
-      with:
-        sarif_file: output.sarif.json
+      - name: Upload SARIF
+        uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        with:
+          sarif_file: output.sarif.json

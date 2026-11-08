@@ -13,16 +13,16 @@ Gem::Specification.new do |gem|
   gem.summary               = gem.description
   gem.homepage              = 'https://github.com/oncreo/letter_opener_web'
   gem.license               = 'MIT'
-  gem.required_ruby_version = '>= 3.1'
+  gem.required_ruby_version = '>= 3.2'
 
   gem.files         = `git ls-files`.split($INPUT_RECORD_SEPARATOR).grep_v(%r{^spec/})
   gem.executables   = gem.files.grep(%r{^exe/}).map { |f| File.basename(f) }
   gem.require_paths = ['lib']
 
-  gem.add_dependency 'actionmailer', '>= 6.1'
+  gem.add_dependency 'actionmailer', '>= 8.1'
   gem.add_dependency 'letter_opener', '~> 1.9'
   gem.add_dependency 'nokogiri', '>= 1.11'
-  gem.add_dependency 'railties', '>= 6.1'
+  gem.add_dependency 'railties', '>= 8.1'
 
   gem.metadata['rubygems_mfa_required'] = 'true'
 end
