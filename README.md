@@ -7,6 +7,25 @@
 Gives [letter_opener](https://github.com/ryanb/letter_opener) an interface for
 browsing sent emails.
 
+> **This is ONCREO's fork** with a modernised interface. On top of upstream it adds:
+>
+> - A two-pane, mail-client-style layout with search, unread markers, relative times and
+>   automatic refresh. No jQuery or Bootstrap.
+> - Light, dark and system themes for the interface.
+> - Two ways to view each email: **Light** (as sent) and **Dark** (recoloured the way Outlook
+>   and Gmail do in dark mode: pale backgrounds darkened, text lightened, brand colours and
+>   images kept).
+> - A phone-width (375px) preview.
+> - The raw message is saved next to each letter, for a **Source** view and `.eml` download.
+>
+> Requires Rails 8.1+ and Ruby 3.3+.
+>
+> Keyboard: `/` search, `j`/`k` or arrow keys to move, `Delete` or `#` to delete, `r` to refresh.
+>
+> ```ruby
+> gem 'letter_opener_web', github: 'oncreo/letter_opener_web', branch: 'modern-ui'
+> ```
+
 ## Installation
 
 First add the gem to your development environment and run the `bundle` command to install it.
@@ -65,21 +84,8 @@ end
 
 ### auto_dark_mode
 
-You can control whether LetterOpenerWeb applies an automatic dark mode
-color inversion strategy when previewing emails.
-
-By default, this is disabled to avoid conflicts with email templates that
-already implement their own `prefers-color-scheme` styling.
-
-```ruby
-LetterOpenerWeb.configure do |config|
-  config.auto_dark_mode = true
-end
-```
-
-When enabled, LetterOpenerWeb applies a CSS-based inversion strategy to
-approximate dark mode for templates that do not define their own styles,
-similar to high-contrast or browser-level color inversion.
+**Ignored in this fork**: the interface has its own theme switch and dark email preview.
+The setting is still accepted so existing configuration keeps working.
 
 ## Usage on pre-production environments
 
