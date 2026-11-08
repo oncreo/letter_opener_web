@@ -8,8 +8,7 @@ module LetterOpenerWeb
   class LettersController < ApplicationController
     helper LetterOpenerWeb::LettersHelper
 
-    before_action :check_style, only: :show
-    before_action :load_letter, only: %i[show details body source attachment destroy]
+    before_action :load_letter, only: %i[details body source attachment destroy]
 
     def index
       @letters = LetterOpenerWeb::Letter.search
@@ -29,12 +28,9 @@ module LetterOpenerWeb
       render partial: 'reader', locals: { letter: @letter }
     end
 
+    # Old letter URLs open the letter in the reader.
     def show
-      text = @letter.send("#{params[:style]}_text")
-                    .gsub('"plain.html"', "\"#{routes.letter_path(id: @letter.id, style: 'plain')}\"")
-                    .gsub('"rich.html"', "\"#{routes.letter_path(id: @letter.id, style: 'rich')}\"")
-
-      render html: text.html_safe
+      redirect_to routes.letters_path(letter: params[:id])
     end
 
     # Just the email itself, without letter_opener's header block, for the
@@ -82,16 +78,11 @@ module LetterOpenerWeb
       @letter.delete
       respond_to do |format|
         format.html { redirect_to routes.letters_path }
-        format.js { render js: "window.location='#{routes.letters_path}'" }
         format.json { head :no_content }
       end
     end
 
     private
-
-    def check_style
-      params[:style] = 'rich' unless %w[plain rich].include?(params[:style])
-    end
 
     def load_letter
       @letter = LetterOpenerWeb::Letter.find(params[:id])

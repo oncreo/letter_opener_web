@@ -40,7 +40,9 @@
   }
 
   function appearance() {
-    return store.get('appearance', null) || (root.dataset.theme === 'dark' ? 'dark' : 'light');
+    var stored = store.get('appearance', null);
+    if (stored === 'light' || stored === 'dark') return stored;
+    return root.dataset.theme === 'dark' ? 'dark' : 'light';
   }
 
   function previewWidth() { return store.get('width', 'desktop'); }
@@ -237,21 +239,12 @@
   }
 
   function render(frame) {
-    var letter = letterEl();
-    var notice = letter && letter.querySelector('[data-notice]');
     var doc;
     try { doc = frame.contentDocument; } catch (e) { doc = null; }
-    if (notice) notice.hidden = true;
 
     if (doc && doc.documentElement && doc.URL !== 'about:blank') {
-      var mode = appearance();
       try {
-        if (mode === 'dark') {
-          EmailDark.apply(doc);
-        } else if (mode === 'native' && !EmailDark.applyNative(doc) && notice) {
-          notice.textContent = 'This email has no prefers-color-scheme: dark styles, so it looks the same as Light.';
-          notice.hidden = false;
-        }
+        if (appearance() === 'dark') EmailDark.apply(doc);
       } catch (e) {
         if (window.console) console.error('letter_opener_web: could not apply dark mode', e);
       }
@@ -384,7 +377,6 @@
   if (firstVisit) {
     items().forEach(function (li) { read.add(li.dataset.id); });
     saveRead();
-    firstVisit = false;
   }
   if (currentId) markRead(currentId);
   decorate();

@@ -58,9 +58,6 @@
         <button type="button" data-appearance="dark" title="Recolour the email for dark mode, like Outlook does">
           <%= lo_icon(:moon, size: 14) %><span>Dark</span>
         </button>
-        <button type="button" data-appearance="native" title="Apply the email's own prefers-color-scheme: dark styles, like Apple Mail does">
-          <%= lo_icon(:system, size: 14) %><span>Email's dark CSS</span>
-        </button>
       </div>
       <div class="segmented" role="group" aria-label="Preview width" data-width-control>
         <button type="button" data-width="desktop" title="Full width"><%= lo_icon(:desktop, size: 14) %></button>
@@ -78,7 +75,6 @@
       </button>
     </div>
   </div>
-  <p class="notice" data-notice hidden></p>
 
   <div class="viewport" data-viewport>
     <iframe title="Email preview" class="loading" data-frame src="<%= views.first&.last || 'about:blank' %>"

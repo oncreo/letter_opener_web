@@ -12,10 +12,9 @@ browsing sent emails.
 > - A two-pane, mail-client-style layout with search, unread markers, relative times and
 >   automatic refresh. No jQuery or Bootstrap.
 > - Light, dark and system themes for the interface.
-> - Three ways to view each email: **Light** (as sent), **Dark** (recoloured the way Outlook
+> - Two ways to view each email: **Light** (as sent) and **Dark** (recoloured the way Outlook
 >   and Gmail do in dark mode: pale backgrounds darkened, text lightened, brand colours and
->   images kept), and **Email's dark CSS** (turns on the email's own
->   `@media (prefers-color-scheme: dark)` rules, as Apple Mail does).
+>   images kept).
 > - A phone-width (375px) preview.
 > - The raw message is saved next to each letter, for a **Source** view and `.eml` download.
 >
@@ -84,22 +83,7 @@ end
 ### auto_dark_mode
 
 **Ignored in this fork**: the interface has its own theme switch and dark email preview.
-
-You can control whether LetterOpenerWeb applies an automatic dark mode
-color inversion strategy when previewing emails.
-
-By default, this is disabled to avoid conflicts with email templates that
-already implement their own `prefers-color-scheme` styling.
-
-```ruby
-LetterOpenerWeb.configure do |config|
-  config.auto_dark_mode = true
-end
-```
-
-When enabled, LetterOpenerWeb applies a CSS-based inversion strategy to
-approximate dark mode for templates that do not define their own styles,
-similar to high-contrast or browser-level color inversion.
+The setting is still accepted so existing configuration keeps working.
 
 ## Usage on pre-production environments
 

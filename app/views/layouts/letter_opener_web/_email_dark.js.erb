@@ -119,26 +119,5 @@ var EmailDark = (function () {
     root.style.setProperty('color-scheme', 'dark');
   }
 
-  // Turns on the email's own @media (prefers-color-scheme: dark) rules, the way
-  // Apple Mail does. Returns false when the email doesn't have any.
-  function applyNative(doc) {
-    var found = 0;
-    Array.prototype.forEach.call(doc.styleSheets, function (sheet) {
-      var rules;
-      try { rules = sheet.cssRules; } catch (e) { return; }
-      var dark = [];
-      Array.prototype.forEach.call(rules, function (rule) {
-        if (rule.media && /prefers-color-scheme\s*:\s*dark/i.test(rule.media.mediaText)) {
-          Array.prototype.forEach.call(rule.cssRules, function (inner) { dark.push(inner.cssText); });
-        }
-      });
-      dark.forEach(function (text) {
-        try { sheet.insertRule(text, sheet.cssRules.length); found++; } catch (e) { /* unsupported rule */ }
-      });
-    });
-    doc.documentElement.style.setProperty('color-scheme', 'dark');
-    return found > 0;
-  }
-
-  return { apply: apply, applyNative: applyNative };
+  return { apply: apply };
 })();

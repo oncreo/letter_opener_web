@@ -24,55 +24,9 @@ RSpec.describe LetterOpenerWeb::LettersController do
   end
 
   describe 'GET show' do
-    let(:id)         { 'an-id' }
-    let(:rich_text)  { 'rich text href="plain.html"' }
-    let(:plain_text) { 'plain text href="rich.html"' }
-    let(:letter)     { double(:letter, rich_text: rich_text, plain_text: plain_text, id: id) }
-
-    shared_examples 'found letter examples' do |letter_style|
-      before(:each) do
-        expect(LetterOpenerWeb::Letter).to receive(:find).with(id).and_return(letter)
-        expect(letter).to receive(:valid?).and_return(true)
-        get :show, params: { id: id, style: letter_style }
-      end
-
-      it 'renders an HTML 200 response' do
-        expect(response.status).to eq(200)
-        expect(response.content_type).to eq('text/html; charset=utf-8')
-      end
-    end
-
-    context 'rich text version' do
-      include_examples 'found letter examples', 'rich'
-
-      it 'renders the rich text contents' do
-        expect(response.body).to match(/^rich text/)
-      end
-
-      it 'fixes plain text link' do
-        expect(response.body).not_to match(/href="plain.html"/)
-        expect(response.body).to match(/href="#{Regexp.escape letter_path(id: id, style: 'plain')}"/)
-      end
-    end
-
-    context 'plain text version' do
-      include_examples 'found letter examples', 'plain'
-
-      it 'renders the plain text contents' do
-        expect(response.body).to match(/^plain text/)
-      end
-
-      it 'fixes rich text link' do
-        expect(response.body).not_to match(/href="rich.html"/)
-        expect(response.body).to match(/href="#{Regexp.escape letter_path(id: id, style: 'rich')}"/)
-      end
-    end
-
-    context 'with wrong parameters' do
-      it 'should return 404 when invalid id given' do
-        get :show, params: { id: id, style: 'rich' }
-        expect(response.status).to eq(404)
-      end
+    it 'opens the letter in the reader' do
+      get :show, params: { id: 'an-id', style: 'rich' }
+      expect(response).to redirect_to(letters_path(letter: 'an-id'))
     end
   end
 

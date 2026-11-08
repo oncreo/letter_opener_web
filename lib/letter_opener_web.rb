@@ -2,7 +2,6 @@
 
 require 'letter_opener_web/version'
 require 'letter_opener_web/engine'
-require 'rexml/document'
 require 'nokogiri'
 require 'mail'
 require 'digest/sha1'
