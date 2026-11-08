@@ -7,6 +7,24 @@
 Gives [letter_opener](https://github.com/ryanb/letter_opener) an interface for
 browsing sent emails.
 
+> **This is ONCREO's fork** with a modernised interface. On top of upstream it adds:
+>
+> - A two-pane, mail-client-style layout with search, unread markers, relative times and
+>   automatic refresh. No jQuery or Bootstrap.
+> - Light, dark and system themes for the interface.
+> - Three ways to view each email: **Light** (as sent), **Dark** (recoloured the way Outlook
+>   and Gmail do in dark mode: pale backgrounds darkened, text lightened, brand colours and
+>   images kept), and **Email's dark CSS** (turns on the email's own
+>   `@media (prefers-color-scheme: dark)` rules, as Apple Mail does).
+> - A phone-width (375px) preview.
+> - The raw message is saved next to each letter, for a **Source** view and `.eml` download.
+>
+> Keyboard: `/` search, `j`/`k` or arrow keys to move, `Delete` or `#` to delete, `r` to refresh.
+>
+> ```ruby
+> gem 'letter_opener_web', github: 'oncreo/letter_opener_web', branch: 'modern-ui'
+> ```
+
 ## Installation
 
 First add the gem to your development environment and run the `bundle` command to install it.
@@ -64,6 +82,8 @@ end
 ```
 
 ### auto_dark_mode
+
+**Ignored in this fork**: the interface has its own theme switch and dark email preview.
 
 You can control whether LetterOpenerWeb applies an automatic dark mode
 color inversion strategy when previewing emails.

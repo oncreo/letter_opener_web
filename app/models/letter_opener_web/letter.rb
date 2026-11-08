@@ -169,7 +169,7 @@ module LetterOpenerWeb
                elsif (html = body_html)
                  body = Nokogiri::HTML(html)
                  body.css('head, style, script, title').each(&:remove)
-                 body.text
+                 body.xpath('//text()').map(&:text).join(' ')
                end
         text.to_s.squish.truncate(PREVIEW_LENGTH)
       end

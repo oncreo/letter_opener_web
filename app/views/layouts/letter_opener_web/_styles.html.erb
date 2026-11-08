@@ -1,4 +1,4 @@
-<style<% if (nonce = lo_nonce) %> nonce="<%= nonce %>"<% end %>>
+<%= tag.style nonce: lo_nonce do %>
   :root {
     --bg: #f6f7f9;
     --surface: #ffffff;
@@ -279,9 +279,17 @@
   .from .muted { font-size: 13px; }
   .letter-date { flex: none; font-size: 12.5px; padding-top: 2px; }
 
-  .recipients { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); }
-  .recipients div { display: flex; gap: 6px; }
-  .recipients dt { flex: none; min-width: 52px; font-weight: 600; }
+  .recipients {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 0 8px;
+    margin: 2px 0 0;
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+
+  .recipients div { display: contents; }
+  .recipients dt { font-weight: 600; }
   .recipients dd { margin: 0; color: var(--text); overflow-wrap: anywhere; }
 
   .attachments { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 0 48px; padding: 0; list-style: none; }
@@ -413,4 +421,4 @@
     .attachments { margin-left: 0; }
     [data-width-control] { display: none !important; }
   }
-</style>
+<% end %>

@@ -11,7 +11,7 @@ Gem::Specification.new do |gem|
   gem.email                 = ['fgrehm@gmail.com', 'david.muto@gmail.com']
   gem.description           = 'Gives letter_opener an interface for browsing sent emails'
   gem.summary               = gem.description
-  gem.homepage              = 'https://github.com/fgrehm/letter_opener_web'
+  gem.homepage              = 'https://github.com/oncreo/letter_opener_web'
   gem.license               = 'MIT'
   gem.required_ruby_version = '>= 3.1'
 

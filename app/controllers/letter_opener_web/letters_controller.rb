@@ -40,6 +40,7 @@ module LetterOpenerWeb
     # Just the email itself, without letter_opener's header block, for the
     # reader iframe. Relative URLs (attachments/...) resolve against the letter.
     def body
+      skip_profiler_badge
       content = params[:style] == 'rich' ? @letter.body_html : @letter.body_text_html
       return head :not_found if content.nil?
 
@@ -96,6 +97,11 @@ module LetterOpenerWeb
       @letter = LetterOpenerWeb::Letter.find(params[:id])
 
       head :not_found unless @letter.valid?
+    end
+
+    # Keep rack-mini-profiler's badge out of the email itself.
+    def skip_profiler_badge
+      Rack::MiniProfiler.current&.inject_js = false if defined?(Rack::MiniProfiler)
     end
 
     def body_base

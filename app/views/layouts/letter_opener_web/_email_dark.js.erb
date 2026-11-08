@@ -6,7 +6,8 @@ var EmailDark = (function () {
   'use strict';
 
   var CANVAS_L = 0.26;        // white page -> about #212121
-  var BG_THRESHOLD = 0.55;    // backgrounds lighter than this get darkened
+  var BG_THRESHOLD = 0.55;    // backgrounds lighter than this get darkened...
+  var VIVID_CHROMA = 0.1;     // ...unless they're a strong colour, like a button
   var TEXT_THRESHOLD = 0.6;   // text darker than this gets lightened
   var MIN_CONTRAST = 0.4;     // minimum lightness gap between text and its background
   var SIDES = ['top', 'right', 'bottom', 'left'];
@@ -73,7 +74,7 @@ var EmailDark = (function () {
       if (bg && bg.a > 0.05) {
         var b = toLch(bg);
         bgL = b.L;
-        if (b.L > BG_THRESHOLD) {
+        if (b.L > BG_THRESHOLD && b.C < VIVID_CHROMA) {
           bgL = darkenBackground(b.L);
           change.bg = toCss(bgL, b.C * 0.7, b.h, bg.a);
         }
@@ -85,9 +86,10 @@ var EmailDark = (function () {
         image = true;
       }
 
-      // Text over a background image keeps its colour: we can't see what's behind it.
+      // Text keeps its colour over a background image (we can't see what's behind
+      // it) and over a light background we left alone, like a yellow button.
       var fg = parse(style.color);
-      if (fg && !image) {
+      if (fg && !image && bgL <= BG_THRESHOLD) {
         var f = toLch(fg);
         var L = f.L < TEXT_THRESHOLD ? 0.93 - f.L * 0.35 : f.L;
         if (L - bgL < MIN_CONTRAST) L = Math.min(0.97, bgL + 0.45);

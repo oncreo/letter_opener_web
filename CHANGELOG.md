@@ -1,6 +1,10 @@
 ## [Unreleased](https://github.com/fgrehm/letter_opener_web/compare/v3.0.0...master)
 
 ### Additions
+- New interface: mail-client layout, search, unread markers, automatic refresh, keyboard
+  shortcuts, light/dark/system themes, Outlook-style and native dark email previews,
+  phone-width preview, Source view and `.eml` download. jQuery and Bootstrap are gone.
+- Save the raw message (`message.eml`) next to each letter.
 - Make dark mode color inversion optional via `LetterOpenerWeb.config.auto_dark_mode` (default: `false`).  
   This avoids double-inversion issues for email templates that already implement `prefers-color-scheme`. [#146]
 

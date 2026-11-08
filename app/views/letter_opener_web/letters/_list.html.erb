@@ -4,8 +4,8 @@
                locals: { selected: selected } %>
   </ul>
 <% end %>
-<p class="list-empty"<%= ' hidden' if letters.any? %>>
+<%= tag.p class: 'list-empty', hidden: letters.any? do %>
   <%= lo_icon(:mail, size: 28) %>
   <span>No letters yet. Emails your app sends will show up here.</span>
-</p>
+<% end %>
 <p class="list-empty no-matches" hidden>No letters match your search.</p>
