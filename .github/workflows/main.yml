@@ -11,7 +11,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Set up latest Ruby
         uses: ruby/setup-ruby@v1
@@ -25,7 +25,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Set up latest Ruby
         uses: ruby/setup-ruby@v1
@@ -46,7 +46,7 @@ jobs:
           - "3.3"
           - "3.4"
           - "4.0"
-          - truffleruby-33.0.1
+          - truffleruby-40.0.0
         rails-version:
           - "6_1"
           - "7_0"
@@ -65,9 +65,9 @@ jobs:
             rails-version: "7_0"
           - ruby-version: "3.1"
             rails-version: "8_0"
-          - ruby-version: truffleruby-head
+          - ruby-version: truffleruby-40.0.0
             rails-version: "6_1"
-          - ruby-version: truffleruby-head
+          - ruby-version: truffleruby-40.0.0
             rails-version: "7_0"
           - ruby-version: "3.1"
             rails-version: "8_1"
@@ -75,7 +75,7 @@ jobs:
       BUNDLE_GEMFILE: gemfiles/rails_${{ matrix.rails-version }}.gemfile
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Set up Ruby ${{ matrix.ruby-version }}
         uses: ruby/setup-ruby@v1
