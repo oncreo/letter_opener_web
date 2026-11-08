@@ -18,7 +18,7 @@ browsing sent emails.
 > - A phone-width (375px) preview.
 > - The raw message is saved next to each letter, for a **Source** view and `.eml` download.
 >
-> Requires Rails 8.1+ and Ruby 3.3+.
+> Requires Rails 8.1 and Ruby 3.3+.
 >
 > Keyboard: `/` search, `j`/`k` or arrow keys to move, `Delete` or `#` to delete, `r` to refresh.
 >
