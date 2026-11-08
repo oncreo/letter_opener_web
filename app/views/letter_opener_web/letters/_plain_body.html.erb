@@ -10,5 +10,6 @@
     a { color: #0b57d0; }
   <% end %>
 </head>
-<body><pre><%= text.html_safe %></pre></body>
+<%# letter_opener escapes the text and only adds links; sanitize keeps it that way. %>
+<body><pre><%= sanitize text, tags: %w[a], attributes: %w[href] %></pre></body>
 </html>

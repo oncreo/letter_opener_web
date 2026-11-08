@@ -267,6 +267,17 @@ RSpec.describe LetterOpenerWeb::LettersController, 'with delivered letters' do
       expect(response.body).to include(%(<base href="#{letter_path(letter)}/" target="_blank">))
     end
 
+    it 'keeps links in the plain text body but strips any other markup' do
+      plain = location.join(letter.id, 'plain.html')
+      plain.write(plain.read.sub('Hello Bob', 'Hello Bob<script>alert(1)</script><img src=x onerror=alert(1)>'))
+
+      get :body, params: { id: letter.id, style: 'plain' }
+
+      expect(response.body).to include('<a href="https://example.com">https://example.com</a>')
+      expect(response.body).not_to include('<script>')
+      expect(response.body).not_to include('onerror')
+    end
+
     it 'returns 404 for a letter that does not exist' do
       get :body, params: { id: 'missing', style: 'rich' }
 
