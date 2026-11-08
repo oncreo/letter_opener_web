@@ -13,7 +13,7 @@ Gem::Specification.new do |gem|
   gem.summary               = gem.description
   gem.homepage              = 'https://github.com/oncreo/letter_opener_web'
   gem.license               = 'MIT'
-  gem.required_ruby_version = '>= 3.2'
+  gem.required_ruby_version = '>= 3.3'
 
   gem.files         = `git ls-files`.split($INPUT_RECORD_SEPARATOR).grep_v(%r{^spec/})
   gem.executables   = gem.files.grep(%r{^exe/}).map { |f| File.basename(f) }

@@ -57,8 +57,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Rails 8.1 supports Ruby 3.2 and newer.
-        ruby-version: ["3.2", "3.3", "3.4", "4.0"]
+        # Ruby versions that still get security fixes (3.2 is EOL).
+        ruby-version: ["3.3", "3.4", "4.0"]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
