@@ -182,7 +182,8 @@ module LetterOpenerWeb
     end
 
     def base_dir_within_letters_location?
-      base_dir.to_s.start_with?(LetterOpenerWeb.config.letters_location.to_s)
+      # The trailing slash rules out the folder itself and siblings like letter_opener_backup.
+      base_dir.to_s.start_with?("#{LetterOpenerWeb.config.letters_location.cleanpath}/")
     end
   end
 end
