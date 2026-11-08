@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <%= base %>
+  <style<% if (nonce = lo_nonce) %> nonce="<%= nonce %>"<% end %>>
+    html { background: #ffffff; color: #1f2328; }
+    body { margin: 0; padding: 20px 24px; }
+    pre { margin: 0; white-space: pre-wrap; word-wrap: break-word; font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    a { color: #0b57d0; }
+  </style>
+</head>
+<body><pre><%= text.html_safe %></pre></body>
+</html>

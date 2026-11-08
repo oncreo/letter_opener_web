@@ -1,0 +1,87 @@
+<% views = [] %>
+<% views << ['rich', 'HTML', letter_body_path(letter, style: 'rich')] if letter.rich? %>
+<% views << ['plain', 'Plain text', letter_body_path(letter, style: 'plain')] if letter.plain? %>
+<% views << ['source', 'Source', letter_source_path(letter)] if letter.source? %>
+<% recipients = letter.header_fields.reject { |(name, _)| %w[From Subject Date].include?(name) } %>
+<article class="letter" data-letter="<%= letter.id %>" data-delete-path="<%= delete_letter_path(letter) %>">
+  <header class="letter-header">
+    <button type="button" class="icon-button back" data-action="back" aria-label="Back to letters">
+      <%= lo_icon(:back, size: 18) %>
+    </button>
+    <h2 class="letter-subject"><%= letter.subject.presence || '(no subject)' %></h2>
+    <div class="letter-meta">
+      <%= lo_avatar(letter) %>
+      <div class="letter-people">
+        <div class="from">
+          <strong><%= letter.sender_name.presence || 'Unknown sender' %></strong>
+          <% if letter.sender_email.present? && letter.sender_email != letter.sender_name %>
+            <span class="muted"><%= letter.sender_email %></span>
+          <% end %>
+        </div>
+        <% if recipients.any? %>
+          <dl class="recipients">
+            <% recipients.each do |(name, value)| %>
+              <div><dt><%= name %></dt><dd><%= value %></dd></div>
+            <% end %>
+          </dl>
+        <% end %>
+      </div>
+      <span class="letter-date muted"><%= lo_time(letter.sent_at) %></span>
+    </div>
+    <% if letter.attachment? %>
+      <ul class="attachments" aria-label="Attachments">
+        <% letter.attachments.each do |name, path| %>
+          <li>
+            <a href="<%= "#{letter_path(letter)}/attachments/#{ERB::Util.url_encode(name)}" %>" target="_blank" rel="noopener">
+              <%= lo_icon(:paperclip, size: 14) %>
+              <span class="name"><%= name %></span>
+              <span class="muted"><%= number_to_human_size(File.size(path)) %></span>
+            </a>
+          </li>
+        <% end %>
+      </ul>
+    <% end %>
+  </header>
+
+  <div class="toolbar">
+    <div class="segmented tabs" role="tablist" aria-label="Format">
+      <% views.each_with_index do |(key, label, src), index| %>
+        <button type="button" role="tab" data-view="<%= key %>" data-src="<%= src %>"
+                aria-selected="<%= index.zero? %>"><%= label %></button>
+      <% end %>
+    </div>
+    <div class="toolbar-group">
+      <div class="segmented" role="group" aria-label="Email appearance" data-appearance-control>
+        <button type="button" data-appearance="light" title="Show the email as it was sent">
+          <%= lo_icon(:sun, size: 14) %><span>Light</span>
+        </button>
+        <button type="button" data-appearance="dark" title="Recolour the email for dark mode, like Outlook does">
+          <%= lo_icon(:moon, size: 14) %><span>Dark</span>
+        </button>
+        <button type="button" data-appearance="native" title="Apply the email's own prefers-color-scheme: dark styles, like Apple Mail does">
+          <%= lo_icon(:system, size: 14) %><span>Email's dark CSS</span>
+        </button>
+      </div>
+      <div class="segmented" role="group" aria-label="Preview width" data-width-control>
+        <button type="button" data-width="desktop" title="Full width"><%= lo_icon(:desktop, size: 14) %></button>
+        <button type="button" data-width="mobile" title="Phone width (375px)"><%= lo_icon(:mobile, size: 14) %></button>
+      </div>
+      <span class="toolbar-divider" aria-hidden="true"></span>
+      <a class="icon-button" data-action="open" href="<%= views.first&.last %>" target="_blank" rel="noopener"
+         title="Open in a new tab" aria-label="Open in a new tab"><%= lo_icon(:external) %></a>
+      <% if letter.source? %>
+        <a class="icon-button" href="<%= letter_source_path(letter, download: 1) %>"
+           title="Download .eml" aria-label="Download .eml"><%= lo_icon(:download) %></a>
+      <% end %>
+      <button type="button" class="icon-button danger" data-action="delete" title="Delete" aria-label="Delete letter">
+        <%= lo_icon(:trash) %>
+      </button>
+    </div>
+  </div>
+  <p class="notice" data-notice hidden></p>
+
+  <div class="viewport" data-viewport>
+    <iframe title="Email preview" class="loading" data-frame src="<%= views.first&.last || 'about:blank' %>"
+            sandbox="allow-same-origin allow-popups allow-popups-to-escape-sandbox"></iframe>
+  </div>
+</article>

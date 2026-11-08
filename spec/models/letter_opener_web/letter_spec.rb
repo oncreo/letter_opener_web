@@ -181,3 +181,73 @@ RSpec.describe LetterOpenerWeb::Letter do
     end
   end
 end
+
+RSpec.describe LetterOpenerWeb::Letter, 'reading a delivered letter' do
+  let(:location) { Pathname.new(__dir__).join('..', '..', 'tmp', 'delivered').cleanpath }
+
+  before { LetterOpenerWeb.configure { |config| config.letters_location = location } }
+
+  after do
+    LetterOpenerWeb.reset!
+    FileUtils.rm_rf(location)
+  end
+
+  subject(:letter) { deliver_letter(location, attachment: true) }
+
+  it 'reads the header fields letter_opener rendered' do
+    expect(letter.subject).to eq('Your weekly report')
+    expect(letter.from).to eq('Jane Smith <jane@example.com>')
+    expect(letter.to).to eq('bob@example.com')
+    expect(letter.header('cc')).to eq('carol@example.com')
+    expect(letter.header_fields.map(&:first)).not_to include('Attachments')
+  end
+
+  it 'uses the display name as the sender name, or the address without one' do
+    expect(letter.sender_name).to eq('Jane Smith')
+    allow(letter).to receive(:from).and_return('jane@example.com')
+    expect(letter.sender_name).to eq('jane@example.com')
+    allow(letter).to receive(:from).and_return('"Smith, Jane" <jane@example.com>')
+    expect(letter.sender_name).to eq('Smith, Jane')
+  end
+
+  it "extracts the email's own HTML without letter_opener's wrapper" do
+    expect(letter.body_html).to start_with('<html><body><p style="color:#333">Hello <b>Bob</b>')
+    expect(letter.body_html).not_to include('message_headers')
+  end
+
+  it 'extracts the auto-linked plain text' do
+    expect(letter.body_text_html).to include('Hello Bob')
+    expect(letter.body_text_html).to include('<a href="https://example.com">')
+  end
+
+  it 'builds a one-line preview from the text part' do
+    expect(letter.preview).to eq('Hello Bob https://example.com')
+  end
+
+  it 'falls back to the HTML for the preview when there is no text part' do
+    html_only = deliver_letter(location, subject: 'HTML only', text: false)
+    expect(html_only.preview).to eq('Hello Bob')
+  end
+
+  it 'knows about attachments' do
+    expect(letter).to be_attachment
+    expect(letter.attachments.keys).to eq(['report.csv'])
+  end
+
+  it 'has a source and a sent time' do
+    expect(letter).to be_source
+    expect(letter.sent_at).to be_within(5).of(Time.now)
+  end
+
+  describe '.fingerprint' do
+    it 'changes when a letter arrives or is deleted' do
+      before = described_class.fingerprint
+      letter
+      after_delivery = described_class.fingerprint
+      letter.delete
+
+      expect(after_delivery).not_to eq(before)
+      expect(described_class.fingerprint).to eq(before)
+    end
+  end
+end

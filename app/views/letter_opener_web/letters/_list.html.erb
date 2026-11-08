@@ -1,0 +1,11 @@
+<% if letters.any? %>
+  <ul role="listbox" aria-label="Letters">
+    <%= render partial: 'letter_opener_web/letters/item', collection: letters, as: :letter,
+               locals: { selected: selected } %>
+  </ul>
+<% end %>
+<p class="list-empty"<%= ' hidden' if letters.any? %>>
+  <%= lo_icon(:mail, size: 28) %>
+  <span>No letters yet. Emails your app sends will show up here.</span>
+</p>
+<p class="list-empty no-matches" hidden>No letters match your search.</p>
