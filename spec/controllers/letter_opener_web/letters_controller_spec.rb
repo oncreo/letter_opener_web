@@ -9,7 +9,7 @@ RSpec.describe LetterOpenerWeb::LettersController do
 
   describe 'GET index' do
     before do
-      allow(LetterOpenerWeb::Letter).to receive(:search)
+      allow(LetterOpenerWeb::Letter).to receive(:search).and_return([])
       get :index
     end
 
@@ -24,55 +24,14 @@ RSpec.describe LetterOpenerWeb::LettersController do
   end
 
   describe 'GET show' do
-    let(:id)         { 'an-id' }
-    let(:rich_text)  { 'rich text href="plain.html"' }
-    let(:plain_text) { 'plain text href="rich.html"' }
-    let(:letter)     { double(:letter, rich_text: rich_text, plain_text: plain_text, id: id) }
-
-    shared_examples 'found letter examples' do |letter_style|
-      before(:each) do
-        expect(LetterOpenerWeb::Letter).to receive(:find).with(id).and_return(letter)
-        expect(letter).to receive(:valid?).and_return(true)
-        get :show, params: { id: id, style: letter_style }
-      end
-
-      it 'renders an HTML 200 response' do
-        expect(response.status).to eq(200)
-        expect(response.content_type).to eq('text/html; charset=utf-8')
-      end
+    it 'opens the letter in the reader' do
+      get :show, params: { id: 'an-id', style: 'rich' }
+      expect(response).to redirect_to(letters_path(letter: 'an-id'))
     end
 
-    context 'rich text version' do
-      include_examples 'found letter examples', 'rich'
-
-      it 'renders the rich text contents' do
-        expect(response.body).to match(/^rich text/)
-      end
-
-      it 'fixes plain text link' do
-        expect(response.body).not_to match(/href="plain.html"/)
-        expect(response.body).to match(/href="#{Regexp.escape letter_path(id: id, style: 'plain')}"/)
-      end
-    end
-
-    context 'plain text version' do
-      include_examples 'found letter examples', 'plain'
-
-      it 'renders the plain text contents' do
-        expect(response.body).to match(/^plain text/)
-      end
-
-      it 'fixes rich text link' do
-        expect(response.body).not_to match(/href="rich.html"/)
-        expect(response.body).to match(/href="#{Regexp.escape letter_path(id: id, style: 'rich')}"/)
-      end
-    end
-
-    context 'with wrong parameters' do
-      it 'should return 404 when invalid id given' do
-        get :show, params: { id: id, style: 'rich' }
-        expect(response.status).to eq(404)
-      end
+    it 'redirects letter URLs without a style too' do
+      get :show, params: { id: 'an-id' }
+      expect(response).to redirect_to(letters_path(letter: 'an-id'))
     end
   end
 
@@ -150,6 +109,235 @@ RSpec.describe LetterOpenerWeb::LettersController do
       delete :destroy, params: { id: bad_id }
 
       expect(response.status).to eq(404)
+    end
+  end
+end
+
+RSpec.describe LetterOpenerWeb::LettersController, 'with delivered letters' do
+  routes { LetterOpenerWeb::Engine.routes }
+  render_views
+
+  let(:location) { Pathname.new(__dir__).join('..', '..', 'tmp', 'controller').cleanpath }
+
+  before { LetterOpenerWeb.configure { |config| config.letters_location = location } }
+
+  let!(:letter) { deliver_letter(location, attachment: true) }
+
+  after do
+    LetterOpenerWeb.reset!
+    FileUtils.rm_rf(location)
+  end
+
+  describe 'GET index' do
+    it 'lists letters and shows the newest one' do
+      get :index
+
+      expect(response.body).to include('Your weekly report')
+      expect(response.body).to include('Jane Smith')
+      expect(response.body).to include(letter_body_path(letter, style: 'rich'))
+      expect(response.body).to include('report.csv')
+      expect(response.body).not_to include('jquery')
+    end
+
+    it 'shows the Rails environment' do
+      get :index
+
+      expect(response.body).to include(%(<span class="env env-test" title="Rails environment">test</span>))
+    end
+
+    it 'shows the requested letter' do
+      other = deliver_letter(location, subject: 'Another one')
+      get :index, params: { letter: letter.id }
+
+      expect(response.body).to include(%(data-letter="#{letter.id}"))
+      expect(response.body).not_to include(%(data-letter="#{other.id}"))
+    end
+
+    it 'falls back to the newest letter when the requested one does not exist' do
+      get :index, params: { letter: 'missing' }
+
+      expect(response.body).to include(%(data-letter="#{letter.id}"))
+    end
+
+    it 'opens the reader on small screens only when a letter was requested' do
+      get :index
+      expect(response.body).to include('<div class="app"')
+
+      get :index, params: { letter: letter.id }
+      expect(response.body).to include('<div class="app reading"')
+    end
+
+    it 'falls back to placeholders for a letter without a subject or sender' do
+      FileUtils.rm_rf(location)
+      mail = Mail.new(to: 'bob@example.com', body: 'Hi')
+      mail.smtp_envelope_from = 'robot@example.com'
+      deliver(location, mail)
+      get :index
+
+      expect(response.body).to include('(no subject)', 'Unknown sender')
+    end
+
+    it 'shows the empty state without letters' do
+      FileUtils.rm_rf(location)
+      get :index
+
+      expect(response.body).to include('No letter selected')
+    end
+  end
+
+  describe 'GET list' do
+    it 'renders just the list' do
+      get :list
+
+      expect(response.body).to include('Your weekly report')
+      expect(response.body).not_to include('<html')
+    end
+  end
+
+  describe 'GET status' do
+    it 'returns the fingerprint' do
+      get :status
+
+      expect(response.parsed_body).to eq('fingerprint' => LetterOpenerWeb::Letter.fingerprint)
+    end
+  end
+
+  describe 'GET details' do
+    it 'renders the reader for one letter' do
+      get :details, params: { id: letter.id }
+
+      expect(response.body).to include('carol@example.com')
+      expect(response.body).to include(letter_source_path(letter, download: 1))
+      expect(response.body).not_to include('<html')
+    end
+
+    it 'offers the HTML, plain text and source views' do
+      get :details, params: { id: letter.id }
+
+      expect(response.body).to include('data-view="rich"', 'data-view="plain"', 'data-view="source"')
+    end
+
+    it 'only offers the views a letter has' do
+      html_only = deliver_letter(location, subject: 'HTML only', text: false)
+      get :details, params: { id: html_only.id }
+
+      expect(response.body).to include('data-view="rich"')
+      expect(response.body).not_to include('data-view="plain"')
+    end
+
+    it 'links attachments with URL-encoded names' do
+      mail = Mail.new(from: 'a@example.com', to: 'b@example.com', subject: 'Files')
+      mail.text_part = Mail::Part.new(body: 'See attached')
+      mail.attachments['my report.csv'] = 'a,b'
+      with_file = deliver(location, mail)
+      get :details, params: { id: with_file.id }
+
+      expect(response.body).to include(%(href="#{letter_path(with_file)}/attachments/my%20report.csv"))
+    end
+
+    it 'returns 404 for a letter that does not exist' do
+      get :details, params: { id: 'missing' }
+
+      expect(response.status).to eq(404)
+    end
+  end
+
+  describe 'GET attachment' do
+    it 'serves the attached file' do
+      get :attachment, params: { id: letter.id, file: 'report.csv' }
+
+      expect(response.status).to eq(200)
+      expect(response.body).to eq("a,b\n1,2\n")
+    end
+  end
+
+  describe 'GET body' do
+    it 'renders the HTML body with a base pointing at the letter' do
+      get :body, params: { id: letter.id, style: 'rich' }
+
+      expect(response.body).to start_with(%(<base href="#{letter_path(letter)}/" target="_blank">))
+      expect(response.body).to include('Hello <b>Bob</b>')
+      expect(response.body).not_to include('message_headers')
+    end
+
+    it 'renders the plain text body' do
+      get :body, params: { id: letter.id, style: 'plain' }
+
+      expect(response.body).to include('<pre>Hello Bob')
+      expect(response.body).to include(%(<base href="#{letter_path(letter)}/" target="_blank">))
+    end
+
+    it 'keeps links in the plain text body but strips any other markup' do
+      plain = location.join(letter.id, 'plain.html')
+      plain.write(plain.read.sub('Hello Bob', 'Hello Bob<script>alert(1)</script><img src=x onerror=alert(1)>'))
+
+      get :body, params: { id: letter.id, style: 'plain' }
+
+      expect(response.body).to include('<a href="https://example.com">https://example.com</a>')
+      expect(response.body).not_to include('<script>')
+      expect(response.body).not_to include('onerror')
+    end
+
+    it 'returns 404 for a letter that does not exist' do
+      get :body, params: { id: 'missing', style: 'rich' }
+
+      expect(response.status).to eq(404)
+    end
+
+    it 'returns 404 for a style the letter does not have' do
+      html_only = deliver_letter(location, subject: 'HTML only', text: false)
+      get :body, params: { id: html_only.id, style: 'plain' }
+
+      expect(response.status).to eq(404)
+    end
+  end
+
+  describe 'GET source' do
+    it 'shows the raw message' do
+      get :source, params: { id: letter.id }
+
+      expect(response.content_type).to start_with('text/plain')
+      expect(response.body).to include('Subject: Your weekly report')
+    end
+
+    it 'downloads it as an .eml file' do
+      get :source, params: { id: letter.id, download: 1 }
+
+      expect(response.headers['Content-Disposition']).to include(%(filename="#{letter.id}.eml"))
+    end
+
+    it 'returns 404 for letters delivered without one' do
+      File.delete(location.join(letter.id, 'message.eml'))
+      get :source, params: { id: letter.id }
+
+      expect(response.status).to eq(404)
+    end
+  end
+
+  describe 'POST destroy' do
+    it 'redirects back to the list' do
+      post :destroy, params: { id: letter.id }
+
+      expect(response).to redirect_to(letters_path)
+      expect(LetterOpenerWeb::Letter.search).to be_empty
+    end
+  end
+
+  describe 'POST destroy as JSON' do
+    it 'deletes the letter' do
+      post :destroy, params: { id: letter.id }, format: :json
+
+      expect(response.status).to eq(204)
+      expect(LetterOpenerWeb::Letter.search).to be_empty
+    end
+  end
+
+  describe 'POST clear as JSON' do
+    it 'deletes all letters' do
+      post :clear, format: :json
+
+      expect(response.status).to eq(204)
+      expect(LetterOpenerWeb::Letter.search).to be_empty
     end
   end
 end

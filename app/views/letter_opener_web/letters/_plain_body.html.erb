@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <%= base %>
+  <%= tag.style nonce: lo_nonce do %>
+    html { background: #ffffff; color: #1f2328; }
+    body { margin: 0; padding: 20px 24px; }
+    pre { margin: 0; white-space: pre-wrap; word-wrap: break-word; font: 13px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+    a { color: #0b57d0; }
+  <% end %>
+</head>
+<%# letter_opener escapes the text and only adds links; sanitize keeps it that way. %>
+<body><pre><%= sanitize text, tags: %w[a], attributes: %w[href] %></pre></body>
+</html>

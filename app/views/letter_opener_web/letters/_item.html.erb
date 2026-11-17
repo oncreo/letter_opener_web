@@ -1,10 +1,22 @@
-<% classes = %w(list-group-item list-group-action d-flex justify-content-between align-items-start p-2 message-headers) %>
-<% classes << 'active' if active %>
-<%= content_tag :li, class: classes do %>
-  <%= link_to(letter_path(letter, style: letter.default_style), target: 'mail') do %>
-    <%= letter.headers %>
-  <% end %>
-  <button class="btn btn-danger btn-sm" data-remote="true" data-url="<%= delete_letter_path(letter) %>" data-method="post" data-confirm="Are you sure?">
-    <strong><small>X</small></strong>
+<% active = selected && selected.id == letter.id %>
+<li role="option" class="item<%= ' active' if active %>" data-id="<%= letter.id %>" aria-selected="<%= active %>"
+    data-search="<%= [letter.subject, letter.from, letter.to, letter.preview].join(' ').downcase %>">
+  <a href="<%= letters_path(letter: letter.id) %>" data-details="<%= letter_details_path(letter) %>" class="item-link">
+    <%= lo_avatar(letter) %>
+    <span class="item-body">
+      <span class="item-top">
+        <span class="sender"><%= letter.sender_name.presence || 'Unknown sender' %></span>
+        <span class="when" data-relative><%= lo_time(letter.sent_at) %></span>
+      </span>
+      <span class="subject"><%= letter.subject.presence || '(no subject)' %></span>
+      <span class="preview">
+        <% if letter.attachment? %><%= lo_icon(:paperclip, size: 12) %><% end %>
+        <%= letter.preview %>
+      </span>
+    </span>
+  </a>
+  <button type="button" class="icon-button item-delete" data-delete="<%= delete_letter_path(letter) %>"
+          title="Delete" aria-label="Delete letter">
+    <%= lo_icon(:trash, size: 14) %>
   </button>
-<% end %>
+</li>
